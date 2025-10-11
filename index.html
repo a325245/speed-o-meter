@@ -19,10 +19,12 @@
     <style>
         /* Custom font for digital look */
         @import url('https://cdn.jsdelivr.net/gh/keshikan/DSEG@7.0.0/dseg.css');
-        body {
+        
+        /* Apply the digital font directly to the specific elements */
+        #speedometer, .unit-btn, #startBtn, #status {
             font-family: 'DSEG7 Classic', 'Orbitron', sans-serif;
-            touch-action: manipulation; /* Disable double-tap to zoom */
         }
+
         /* Style for the active unit button */
         .unit-btn-active {
             background-color: #dc2626 !important; /* red-600 */
@@ -39,7 +41,7 @@
 
     <!-- Main Speedometer Display (initially hidden) -->
     <div id="speedometer" class="text-center hidden">
-        <h1 id="speed" class="text-9xl md:text-[12rem] font-normal tracking-widest transition-all duration-200">--</h1>
+        <h1 id="speed" class="text-9xl md:text-[12rem] tracking-wider transition-all duration-200">--</h1>
         <p id="unit" class="text-3xl md:text-4xl text-red-300 mt-2">MPH</p>
     </div>
 
@@ -50,8 +52,8 @@
 
     <!-- Unit Switcher -->
     <div class="absolute bottom-4 flex space-x-2 bg-gray-900 p-1 rounded-full">
-        <button id="mphBtn" class="unit-btn unit-btn-active px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200">MPH</button>
-        <button id="kphBtn" class="unit-btn px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200 text-red-500">KPH</button>
+        <button id="mphBtn" class="unit-btn unit-btn-active px-4 py-2 rounded-full text-sm transition-colors duration-200">MPH</button>
+        <button id="kphBtn" class="unit-btn px-4 py-2 rounded-full text-sm text-red-500 transition-colors duration-200">KPH</button>
     </div>
 
     <script>
