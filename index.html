@@ -17,14 +17,9 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom font for digital look */
-        @import url('https://cdn.jsdelivr.net/gh/keshikan/DSEG@7.0.0/dseg.css');
-        
-        /* Apply the digital font directly to the specific elements */
-        #speedometer, .unit-btn, #startBtn, #status {
-            font-family: 'DSEG7 Classic', 'Orbitron', sans-serif;
+        body {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
         }
-
         /* Style for the active unit button */
         .unit-btn-active {
             background-color: #dc2626 !important; /* red-600 */
@@ -32,7 +27,7 @@
         }
     </style>
 </head>
-<body class="bg-black text-red-400 flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden">
+<body class="bg-black text-red-400 flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden transition-all duration-300">
 
     <!-- Start Button (initially visible) -->
     <button id="startBtn" class="bg-red-600 text-white text-2xl px-8 py-4 rounded-lg hover:bg-red-700 transition-colors">
@@ -41,7 +36,7 @@
 
     <!-- Main Speedometer Display (initially hidden) -->
     <div id="speedometer" class="text-center hidden">
-        <h1 id="speed" class="text-9xl md:text-[12rem] tracking-wider transition-all duration-200">--</h1>
+        <h1 id="speed" class="text-9xl md:text-[12rem] font-normal transition-all duration-200">--</h1>
         <p id="unit" class="text-3xl md:text-4xl text-red-300 mt-2">MPH</p>
     </div>
 
@@ -52,8 +47,8 @@
 
     <!-- Unit Switcher -->
     <div class="absolute bottom-4 flex space-x-2 bg-gray-900 p-1 rounded-full">
-        <button id="mphBtn" class="unit-btn unit-btn-active px-4 py-2 rounded-full text-sm transition-colors duration-200">MPH</button>
-        <button id="kphBtn" class="unit-btn px-4 py-2 rounded-full text-sm text-red-500 transition-colors duration-200">KPH</button>
+        <button id="mphBtn" class="unit-btn unit-btn-active px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200">MPH</button>
+        <button id="kphBtn" class="unit-btn px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200 text-red-500">KPH</button>
     </div>
 
     <script>
@@ -109,6 +104,34 @@
             kphBtn.classList.toggle('unit-btn-active', newUnit === 'kph');
             mphBtn.classList.toggle('text-red-500', newUnit !== 'mph');
             kphBtn.classList.toggle('text-red-500', newUnit !== 'kph');
+        }
+
+        // --- Layout Control ---
+        /**
+         * Handles taps on the screen to change speedometer alignment.
+         * @param {MouseEvent} event
+         */
+        function handleScreenTap(event) {
+            // Ignore taps on any button
+            if (event.target.closest('button')) {
+                return;
+            }
+
+            const screenWidth = window.innerWidth;
+            const clickX = event.clientX;
+            const bodyEl = document.body;
+
+            // Remove existing alignment classes
+            bodyEl.classList.remove('items-start', 'items-center', 'items-end');
+
+            // Add the new alignment class based on tap position
+            if (clickX < screenWidth / 3) {
+                bodyEl.classList.add('items-start');
+            } else if (clickX > screenWidth * 2 / 3) {
+                bodyEl.classList.add('items-end');
+            } else {
+                bodyEl.classList.add('items-center');
+            }
         }
 
         // --- Sensor Logic ---
@@ -206,6 +229,7 @@
         mphBtn.addEventListener('click', () => setUnit('mph'));
         kphBtn.addEventListener('click', () => setUnit('kph'));
         startBtn.addEventListener('click', initializeApp); 
+        document.body.addEventListener('click', handleScreenTap);
 
         window.addEventListener('load', () => {
             if ('serviceWorker' in navigator) {
