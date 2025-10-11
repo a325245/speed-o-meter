@@ -27,28 +27,33 @@
         }
     </style>
 </head>
-<body class="bg-black text-red-400 flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden transition-all duration-300">
+<body class="bg-black text-red-400 min-h-screen p-4 overflow-hidden">
 
-    <!-- Start Button (initially visible) -->
-    <button id="startBtn" class="bg-red-600 text-white text-2xl px-8 py-4 rounded-lg hover:bg-red-700 transition-colors">
-        Start
-    </button>
-
-    <!-- Main Speedometer Display (initially hidden) -->
-    <div id="speedometer" class="text-center hidden">
-        <h1 id="speed" class="text-9xl md:text-[12rem] font-normal transition-all duration-200">--</h1>
-        <p id="unit" class="text-3xl md:text-4xl text-red-300 mt-2">MPH</p>
+    <!-- Wrapper for the start button to keep it centered initially -->
+    <div id="startBtnWrapper" class="flex flex-col items-center justify-center min-h-screen">
+        <button id="startBtn" class="bg-red-600 text-white text-2xl px-8 py-4 rounded-lg hover:bg-red-700 transition-colors z-20">
+            Start
+        </button>
     </div>
 
+    <!-- This is the container that will slide -->
+    <div id="speedometerContainer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-in-out flex flex-col items-center">
+        <!-- Speedometer Display -->
+        <div id="speedometer" class="text-center hidden">
+            <h1 id="speed" class="text-9xl md:text-[12rem] font-normal transition-all duration-200">--</h1>
+            <p id="unit" class="text-3xl md:text-4xl text-red-300 mt-2">MPH</p>
+        </div>
+        
+        <!-- Unit Switcher (now INSIDE the sliding container) -->
+        <div id="unitSwitcher" class="hidden mt-8 flex space-x-2 bg-gray-900 p-1 rounded-full z-20">
+            <button id="mphBtn" class="unit-btn unit-btn-active px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200">MPH</button>
+            <button id="kphBtn" class="unit-btn px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200 text-red-500">KPH</button>
+        </div>
+    </div>
+    
     <!-- Status Message -->
     <div id="status" class="absolute top-4 left-4 right-4 text-center text-sm text-gray-400 p-4">
         <!-- Status will be updated by JS -->
-    </div>
-
-    <!-- Unit Switcher -->
-    <div class="absolute bottom-4 flex space-x-2 bg-gray-900 p-1 rounded-full">
-        <button id="mphBtn" class="unit-btn unit-btn-active px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200">MPH</button>
-        <button id="kphBtn" class="unit-btn px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200 text-red-500">KPH</button>
     </div>
 
     <script>
@@ -59,7 +64,11 @@
         const mphBtn = document.getElementById('mphBtn');
         const kphBtn = document.getElementById('kphBtn');
         const speedometerDiv = document.getElementById('speedometer');
+        const speedometerContainer = document.getElementById('speedometerContainer');
         const startBtn = document.getElementById('startBtn');
+        const startBtnWrapper = document.getElementById('startBtnWrapper');
+        const unitSwitcher = document.getElementById('unitSwitcher');
+
 
         // --- State ---
         let currentUnit = 'mph'; // 'mph' or 'kph'
@@ -119,18 +128,14 @@
 
             const screenWidth = window.innerWidth;
             const clickX = event.clientX;
-            const bodyEl = document.body;
-
-            // Remove existing alignment classes
-            bodyEl.classList.remove('items-start', 'items-center', 'items-end');
-
-            // Add the new alignment class based on tap position
+            
+            // Reposition the speedometer container with a smooth animation
             if (clickX < screenWidth / 3) {
-                bodyEl.classList.add('items-start');
+                speedometerContainer.style.left = '16.66%'; // Left column
             } else if (clickX > screenWidth * 2 / 3) {
-                bodyEl.classList.add('items-end');
+                speedometerContainer.style.left = '83.33%'; // Right column
             } else {
-                bodyEl.classList.add('items-center');
+                speedometerContainer.style.left = '50%'; // Center column
             }
         }
 
@@ -213,8 +218,9 @@
             appInitialized = true;
             
             // --- Provide immediate feedback ---
-            startBtn.classList.add('hidden');
+            startBtnWrapper.classList.add('hidden');
             speedometerDiv.classList.remove('hidden');
+            unitSwitcher.classList.remove('hidden');
             statusElement.textContent = 'Requesting permissions...';
             
             // Start both sensor listeners
