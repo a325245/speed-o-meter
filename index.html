@@ -78,6 +78,7 @@
         const MPS_TO_KPH = 3.6;
         let lastMotionTimestamp = null;
         let appInitialized = false;
+        let wakeLockSentinel = null;
 
         // --- Speed Limit API Logic ---
         let lastSpeedLimitCheck = 0;
@@ -85,13 +86,10 @@
 
         async function fetchSpeedLimitFromAPI(lat, lon) {
             const overpassUrl = 'https://overpass-api.de/api/interpreter';
-            // Query looks for roads ("ways") with a "maxspeed" tag within 25 meters of the user's location.
             const query = `[out:json];way(around:25,${lat},${lon})["maxspeed"];out tags;`;
-            
             try {
                 const response = await fetch(overpassUrl + '?data=' + encodeURIComponent(query));
                 if (!response.ok) {
-                    // This could be a 429 "Too Many Requests" error if we query too often.
                     console.error('Overpass API error:', response.status);
                     speedLimitValue.textContent = '--';
                     return;
@@ -99,19 +97,28 @@
                 const data = await response.json();
                 if (data.elements.length > 0) {
                     const speedLimit = data.elements[0].tags.maxspeed;
-                    // The speed limit from OSM is often just a number, assuming local units.
-                    // We extract just the number part in case it includes " mph".
                     speedLimitValue.textContent = parseInt(speedLimit) || '--';
                 } else {
                     speedLimitValue.textContent = '--';
                 }
             } catch (error) {
                 console.error('Failed to fetch speed limit:', error);
-                speedLimitValue.textContent = '--'; // Show nothing on error
+                speedLimitValue.textContent = '--';
             }
         }
 
         // --- Core Functions ---
+        const requestWakeLock = async () => {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLockSentinel = await navigator.wakeLock.request('screen');
+                    console.log('Screen Wake Lock is active.');
+                } catch (err) {
+                    console.error(`${err.name}, ${err.message}`);
+                }
+            }
+        };
+
         function render() {
             if (appInitialized) {
                 displaySpeedMps += (rawSpeedMps - displaySpeedMps) * SMOOTHING_FACTOR;
@@ -197,6 +204,7 @@
             
             startGeolocation();
             startMotionTracking();
+            requestWakeLock(); // Request the screen wake lock
             
             render();
         }
@@ -206,6 +214,13 @@
         kphBtn.addEventListener('click', () => setUnit('kph'));
         startBtn.addEventListener('click', initializeApp); 
         document.body.addEventListener('click', handleScreenTap);
+
+        // Re-acquire the wake lock if the page becomes visible again
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLockSentinel !== null && document.visibilityState === 'visible') {
+                await requestWakeLock();
+            }
+        });
 
         window.addEventListener('load', () => {
             if ('serviceWorker' in navigator) {
