@@ -28,6 +28,26 @@
 </head>
 <body class="bg-black text-red-400 min-h-screen p-4 overflow-hidden">
 
+    <!-- Settings Button -->
+    <button id="settingsBtn" class="absolute top-4 right-4 z-30 p-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    </button>
+    
+    <!-- Settings Panel -->
+    <div id="settingsPanel" class="hidden absolute top-0 left-0 w-full h-full bg-black/80 flex items-center justify-center z-40 p-4">
+        <div class="bg-gray-900 p-6 rounded-lg w-full max-w-sm">
+            <h2 class="text-white text-xl mb-4">Settings</h2>
+            <label for="apiKeyInput" class="text-gray-400 text-sm">Google Maps Roads API Key</label>
+            <input type="text" id="apiKeyInput" class="w-full bg-gray-800 border border-gray-700 text-white rounded-md p-2 mt-1 mb-4" placeholder="Enter your API key">
+            <div class="flex space-x-2">
+                <button id="saveKeyBtn" class="flex-1 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition">Save</button>
+                <button id="clearKeyBtn" class="flex-1 bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition">Clear</button>
+            </div>
+            <p id="settingsStatus" class="text-green-400 text-sm mt-3 text-center h-4"></p>
+            <button id="closeSettingsBtn" class="w-full mt-4 text-gray-400 text-center">Close</button>
+        </div>
+    </div>
+
     <div id="startBtnWrapper" class="flex flex-col items-center justify-center min-h-screen">
         <button id="startBtn" class="bg-red-600 text-white text-2xl px-8 py-4 rounded-lg hover:bg-red-700 transition-colors z-20">
             Start
@@ -68,8 +88,16 @@
         const unitSwitcher = document.getElementById('unitSwitcher');
         const speedLimitDisplay = document.getElementById('speedLimitDisplay');
         const speedLimitValue = document.getElementById('speedLimitValue');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const saveKeyBtn = document.getElementById('saveKeyBtn');
+        const clearKeyBtn = document.getElementById('clearKeyBtn');
+        const settingsStatus = document.getElementById('settingsStatus');
 
         // --- State ---
+        let googleApiKey = null;
         let currentUnit = 'mph';
         let rawSpeedMps = 0;
         let displaySpeedMps = 0;
@@ -82,28 +110,32 @@
 
         // --- Speed Limit API Logic ---
         let lastSpeedLimitCheck = 0;
-        const SPEED_LIMIT_CHECK_INTERVAL = 10000; // 10 seconds
+        const SPEED_LIMIT_CHECK_INTERVAL = 15000; // 15 seconds
 
-        async function fetchSpeedLimitFromAPI(lat, lon) {
-            const overpassUrl = 'https://overpass-api.de/api/interpreter';
-            const query = `[out:json];way(around:25,${lat},${lon})["maxspeed"];out tags;`;
+        async function fetchGoogleSpeedLimit(lat, lon) {
+            if (!googleApiKey) {
+                speedLimitValue.textContent = '--';
+                return;
+            }
+            const apiUrl = `https://roads.googleapis.com/v1/speedLimits?path=${lat},${lon}&key=${googleApiKey}`;
             try {
-                const response = await fetch(overpassUrl + '?data=' + encodeURIComponent(query));
+                const response = await fetch(apiUrl);
                 if (!response.ok) {
-                    console.error('Overpass API error:', response.status);
-                    speedLimitValue.textContent = '--';
+                    console.error('Google Roads API error:', response.status);
+                    speedLimitValue.textContent = 'ERR';
                     return;
                 }
                 const data = await response.json();
-                if (data.elements.length > 0) {
-                    const speedLimit = data.elements[0].tags.maxspeed;
-                    speedLimitValue.textContent = parseInt(speedLimit) || '--';
+                if (data.speedLimits && data.speedLimits.length > 0) {
+                    const kphLimit = data.speedLimits[0].speedLimit;
+                    const mphLimit = (kphLimit * 0.621371).toFixed(0);
+                    speedLimitValue.textContent = mphLimit;
                 } else {
                     speedLimitValue.textContent = '--';
                 }
             } catch (error) {
                 console.error('Failed to fetch speed limit:', error);
-                speedLimitValue.textContent = '--';
+                speedLimitValue.textContent = 'ERR';
             }
         }
 
@@ -112,10 +144,7 @@
             if ('wakeLock' in navigator) {
                 try {
                     wakeLockSentinel = await navigator.wakeLock.request('screen');
-                    console.log('Screen Wake Lock is active.');
-                } catch (err) {
-                    console.error(`${err.name}, ${err.message}`);
-                }
+                } catch (err) { console.error(`${err.name}, ${err.message}`); }
             }
         };
 
@@ -138,7 +167,7 @@
         }
 
         function handleScreenTap(event) {
-            if (event.target.closest('button')) return;
+            if (event.target.closest('button') || event.target.closest('#settingsPanel')) return;
             const screenWidth = window.innerWidth;
             const clickX = event.clientX;
             if (clickX < screenWidth / 3) speedometerContainer.style.left = '16.66%';
@@ -161,9 +190,15 @@
         function startMotionTracking() {
             if (typeof DeviceMotionEvent.requestPermission === 'function') {
                 DeviceMotionEvent.requestPermission().then(state => {
-                    if (state === 'granted') window.addEventListener('devicemotion', handleMotionEvent);
-                    else statusElement.textContent = "Motion sensor permission denied.";
-                }).catch(err => statusElement.textContent = `Motion sensor error: ${err.message}`);
+                    if (state === 'granted') {
+                        window.addEventListener('devicemotion', handleMotionEvent);
+                    } else {
+                        statusElement.textContent = "Motion sensor permission denied.";
+                    }
+                }).catch(err => {
+                    statusElement.textContent = `Motion sensor error: ${err.message}`;
+                    console.error(err);
+                });
             } else {
                 window.addEventListener('devicemotion', handleMotionEvent);
             }
@@ -175,60 +210,78 @@
                     (position) => {
                         statusElement.textContent = `GPS Active. Accuracy: ${position.coords.accuracy.toFixed(0)}m`;
                         if (position.coords.speed !== null) rawSpeedMps = position.coords.speed;
-                        
                         const now = Date.now();
                         if (now - lastSpeedLimitCheck > SPEED_LIMIT_CHECK_INTERVAL) {
                             lastSpeedLimitCheck = now;
-                            fetchSpeedLimitFromAPI(position.coords.latitude, position.coords.longitude);
+                            fetchGoogleSpeedLimit(position.coords.latitude, position.coords.longitude);
                         }
                     },
-                    (error) => {
-                        statusElement.textContent = `GPS Error: ${error.message}`;
-                    },
+                    (error) => { statusElement.textContent = `GPS Error: ${error.message}`; },
                     { enableHighAccuracy: true }
                 );
-            } else {
-                statusElement.textContent = 'GPS is not supported by your browser.';
-            }
+            } else { statusElement.textContent = 'GPS is not supported by your browser.'; }
         }
         
         function initializeApp() {
             if (appInitialized) return;
             appInitialized = true;
-            
             startBtnWrapper.classList.add('hidden');
             speedometerDiv.classList.remove('hidden');
             unitSwitcher.classList.remove('hidden');
             speedLimitDisplay.classList.remove('hidden');
             statusElement.textContent = 'Requesting permissions...';
-            
             startGeolocation();
             startMotionTracking();
-            requestWakeLock(); // Request the screen wake lock
-            
+            requestWakeLock();
             render();
         }
+
+        // --- Settings Panel Logic ---
+        function showSettingsStatus(message, isSuccess = true) {
+            settingsStatus.textContent = message;
+            settingsStatus.style.color = isSuccess ? '#4ade80' : '#f87171';
+            setTimeout(() => { settingsStatus.textContent = ''; }, 2000);
+        }
+        
+        settingsBtn.addEventListener('click', () => settingsPanel.classList.remove('hidden'));
+        closeSettingsBtn.addEventListener('click', () => settingsPanel.classList.add('hidden'));
+        saveKeyBtn.addEventListener('click', () => {
+            const key = apiKeyInput.value.trim();
+            if(key) {
+                localStorage.setItem('googleApiKey', key);
+                googleApiKey = key;
+                showSettingsStatus('API Key Saved!');
+            } else {
+                showSettingsStatus('Please enter a key.', false);
+            }
+        });
+        clearKeyBtn.addEventListener('click', () => {
+            localStorage.removeItem('googleApiKey');
+            googleApiKey = null;
+            apiKeyInput.value = '';
+            showSettingsStatus('API Key Cleared!');
+        });
 
         // --- Event Listeners ---
         mphBtn.addEventListener('click', () => setUnit('mph'));
         kphBtn.addEventListener('click', () => setUnit('kph'));
         startBtn.addEventListener('click', initializeApp); 
         document.body.addEventListener('click', handleScreenTap);
-
-        // Re-acquire the wake lock if the page becomes visible again
         document.addEventListener('visibilitychange', async () => {
-            if (wakeLockSentinel !== null && document.visibilityState === 'visible') {
-                await requestWakeLock();
-            }
+            if (wakeLockSentinel !== null && document.visibilityState === 'visible') await requestWakeLock();
         });
 
         window.addEventListener('load', () => {
+            googleApiKey = localStorage.getItem('googleApiKey');
+            if(googleApiKey) apiKeyInput.value = googleApiKey;
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW reg failed: ', err));
+                navigator.serviceWorker.register('./sw.js').catch(err => {
+                    console.error('Service Worker registration failed:', err);
+                });
             }
-            render();
         });
     </script>
 </body>
 </html>
+
 
