@@ -17,315 +17,310 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        /* Custom styles for toggle switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #48bb78;
         }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #48bb78;
+        }
+        /* Custom styles for active unit button */
         .unit-btn-active {
             background-color: #dc2626 !important;
             color: #ffffff !important;
         }
+        /* Ensure html and body take full height for layout */
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
     </style>
 </head>
-<body class="bg-black text-red-400 min-h-screen p-4 overflow-hidden">
+<body class="min-h-screen p-4 overflow-hidden transition-colors duration-300">
 
     <!-- Settings Button -->
-    <button id="settingsBtn" class="absolute top-4 right-4 z-30 p-2">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    <button id="settingsBtn" class="absolute top-4 right-4 z-30 p-2 text-gray-400 dark:text-gray-500">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
     </button>
     
     <!-- Settings Panel -->
     <div id="settingsPanel" class="hidden absolute top-0 left-0 w-full h-full bg-black/80 flex items-center justify-center z-40 p-4">
-        <div class="bg-gray-900 p-6 rounded-lg w-full max-w-sm">
-            <h2 class="text-white text-xl mb-4">Settings</h2>
-            <div class="mb-4">
-                <label for="apiKeyInput" class="text-gray-400 text-sm">Google Maps Roads API Key</label>
-                <input type="text" id="apiKeyInput" class="w-full bg-gray-800 border border-gray-700 text-white rounded-md p-2 mt-1" placeholder="Enter your API key">
+        <div class="bg-white dark:bg-gray-900 p-6 rounded-lg w-full max-w-sm text-gray-800 dark:text-gray-200">
+            <h2 class="text-xl mb-6">Settings</h2>
+            <div class="flex items-center justify-between mb-4">
+                <label for="themeToggle">Night Mode</label>
+                <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                    <input type="checkbox" name="themeToggle" id="themeToggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                    <label for="themeToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                </div>
             </div>
-            <div class="flex space-x-2">
-                <button id="saveKeyBtn" class="flex-1 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition">Save</button>
-                <button id="clearKeyBtn" class="flex-1 bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition">Clear</button>
+            <div class="flex items-center justify-between">
+                <label for="accuracyToggle">Show GPS Accuracy</label>
+                 <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                    <input type="checkbox" name="accuracyToggle" id="accuracyToggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                    <label for="accuracyToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                </div>
             </div>
-            <p id="settingsStatus" class="text-green-400 text-sm mt-3 text-center h-4"></p>
-            <div class="mt-4 pt-4 border-t border-gray-700">
-                 <label class="flex items-center space-x-3 cursor-pointer">
-                    <input type="checkbox" id="demoModeCheckbox" class="bg-gray-700 border-gray-600 rounded">
-                    <span class="text-gray-300">Enable Demo Mode</span>
-                </label>
-            </div>
-            <button id="closeSettingsBtn" class="w-full mt-6 text-gray-400 text-center">Close</button>
+            <button id="closeSettingsBtn" class="w-full mt-8 text-gray-500 dark:text-gray-400 text-center">Close</button>
         </div>
     </div>
 
-    <div id="startBtnWrapper" class="flex flex-col items-center justify-center min-h-screen">
+
+    <div id="startBtnWrapper" class="flex flex-col items-center justify-center h-full">
         <button id="startBtn" class="bg-red-600 text-white text-2xl px-8 py-4 rounded-lg hover:bg-red-700 transition-colors z-20">
             Start
         </button>
     </div>
 
-    <div id="speedometerContainer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-in-out flex flex-col items-center">
+    <div id="speedometerContainer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-in-out flex-col items-center hidden">
         <!-- Speed Limit Display -->
-        <div id="speedLimitDisplay" class="hidden text-center mb-4">
-            <div class="text-gray-400 text-sm">LIMIT</div>
-            <div id="speedLimitValue" class="text-3xl font-bold text-white">--</div>
+        <div id="speedLimitDisplay" class="text-center mb-4 opacity-0 transition-opacity duration-500">
+            <div class="text-gray-500 dark:text-gray-400 text-sm">LIMIT</div>
+            <div id="speedLimitValue" class="text-3xl font-bold text-gray-900 dark:text-white">--</div>
         </div>
 
-        <div id="speedometer" class="text-center hidden">
-            <h1 id="speed" class="text-9xl md:text-[12rem] font-normal transition-all duration-200">--</h1>
-            <p id="unit" class="text-3xl md:text-4xl text-red-300 mt-2">MPH</p>
+        <div id="speedometer" class="text-center">
+            <h1 id="speed" class="text-9xl md:text-[12rem] font-normal transition-all duration-200 text-red-500 dark:text-red-400">--</h1>
+            <p id="unit" class="text-3xl md:text-4xl text-red-400 dark:text-red-300 mt-2">MPH</p>
         </div>
         
-        <div id="unitSwitcher" class="hidden mt-8 flex space-x-2 bg-gray-900 p-1 rounded-full z-20">
+        <div id="unitSwitcher" class="mt-8 flex space-x-2 bg-gray-200 dark:bg-gray-900 p-1 rounded-full z-20">
             <button id="mphBtn" class="unit-btn unit-btn-active px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200">MPH</button>
             <button id="kphBtn" class="unit-btn px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200 text-red-500">KPH</button>
         </div>
     </div>
     
-    <div id="status" class="absolute top-4 left-4 right-4 text-center text-sm text-gray-400 p-4"></div>
+    <div id="status" class="absolute top-4 left-4 right-4 text-center text-sm text-gray-500 dark:text-gray-400 p-4"></div>
 
     <script>
-        // --- DOM Elements ---
-        const speedElement = document.getElementById('speed');
-        const unitElement = document.getElementById('unit');
-        const statusElement = document.getElementById('status');
-        const mphBtn = document.getElementById('mphBtn');
-        const kphBtn = document.getElementById('kphBtn');
-        const speedometerDiv = document.getElementById('speedometer');
-        const speedometerContainer = document.getElementById('speedometerContainer');
-        const startBtn = document.getElementById('startBtn');
-        const startBtnWrapper = document.getElementById('startBtnWrapper');
-        const unitSwitcher = document.getElementById('unitSwitcher');
-        const speedLimitDisplay = document.getElementById('speedLimitDisplay');
-        const speedLimitValue = document.getElementById('speedLimitValue');
-        const settingsBtn = document.getElementById('settingsBtn');
-        const settingsPanel = document.getElementById('settingsPanel');
-        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-        const apiKeyInput = document.getElementById('apiKeyInput');
-        const saveKeyBtn = document.getElementById('saveKeyBtn');
-        const clearKeyBtn = document.getElementById('clearKeyBtn');
-        const settingsStatus = document.getElementById('settingsStatus');
-        const demoModeCheckbox = document.getElementById('demoModeCheckbox');
+        // Use an immediately-invoked function expression (IIFE) to encapsulate scope
+        (() => {
+            // --- DOM Elements ---
+            const speedElement = document.getElementById('speed');
+            const unitElement = document.getElementById('unit');
+            const statusElement = document.getElementById('status');
+            const mphBtn = document.getElementById('mphBtn');
+            const kphBtn = document.getElementById('kphBtn');
+            const speedometerContainer = document.getElementById('speedometerContainer');
+            const startBtn = document.getElementById('startBtn');
+            const startBtnWrapper = document.getElementById('startBtnWrapper');
+            const unitSwitcher = document.getElementById('unitSwitcher');
+            const speedLimitDisplay = document.getElementById('speedLimitDisplay');
+            const speedLimitValue = document.getElementById('speedLimitValue');
+            const settingsBtn = document.getElementById('settingsBtn');
+            const settingsPanel = document.getElementById('settingsPanel');
+            const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+            const themeToggle = document.getElementById('themeToggle');
+            const accuracyToggle = document.getElementById('accuracyToggle');
 
-        // --- State ---
-        let googleApiKey = null;
-        let currentUnit = 'mph';
-        let rawSpeedMps = 0;
-        let displaySpeedMps = 0;
-        const SMOOTHING_FACTOR = 0.1;
-        const MPS_TO_MPH = 2.23694;
-        const MPS_TO_KPH = 3.6;
-        let lastMotionTimestamp = null;
-        let appInitialized = false;
-        let wakeLockSentinel = null;
-        let demoInterval = null;
+            // --- State ---
+            let currentUnit = 'mph';
+            let rawSpeedMps = 0;
+            let displaySpeedMps = 0;
+            const SMOOTHING_FACTOR = 0.1;
+            const MPS_TO_MPH = 2.23694;
+            const MPS_TO_KPH = 3.6;
+            let lastMotionTimestamp = null;
+            let appInitialized = false;
+            let wakeLockSentinel = null;
 
-        // --- Speed Limit API Logic ---
-        let lastSpeedLimitCheck = 0;
-        const SPEED_LIMIT_CHECK_INTERVAL = 15000; // 15 seconds
+            // --- Settings ---
+            const defaultSettings = { theme: 'dark', showAccuracy: true };
+            let settings = { ...defaultSettings };
 
-        async function fetchGoogleSpeedLimit(lat, lon) {
-            if (!googleApiKey) {
-                speedLimitValue.textContent = '--';
-                return;
+            function saveSettings() {
+                localStorage.setItem('speedometerSettings', JSON.stringify(settings));
             }
-            const apiUrl = `https://roads.googleapis.com/v1/speedLimits?path=${lat},${lon}&key=${googleApiKey}`;
-            try {
-                const response = await fetch(apiUrl);
-                if (!response.ok) {
-                    console.error('Google Roads API error:', response.status);
-                    speedLimitValue.textContent = 'ERR';
+
+            function applySettings() {
+                // Apply theme
+                if (settings.theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    document.body.classList.add('bg-black');
+                    document.body.classList.remove('bg-gray-100');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    document.body.classList.add('bg-gray-100');
+                    document.body.classList.remove('bg-black');
+                }
+                themeToggle.checked = settings.theme === 'dark';
+                
+                // Apply accuracy visibility
+                statusElement.style.display = settings.showAccuracy ? 'block' : 'none';
+                accuracyToggle.checked = settings.showAccuracy;
+            }
+
+            function loadSettings() {
+                const savedSettings = localStorage.getItem('speedometerSettings');
+                settings = savedSettings ? JSON.parse(savedSettings) : { ...defaultSettings };
+                applySettings();
+            }
+
+            // --- Speed Limit API Logic ---
+            let lastSpeedLimitCheck = 0;
+            const SPEED_LIMIT_CHECK_INTERVAL = 10000; // 10 seconds
+            let speedLimitAbortController = null;
+
+            async function fetchOpenStreetMapSpeedLimit(lat, lon) {
+                if (speedLimitAbortController) speedLimitAbortController.abort();
+                speedLimitAbortController = new AbortController();
+                
+                const query = `[out:json][timeout:10];way(around:50,${lat},${lon})["maxspeed"];out body;>;out skel qt;`;
+                const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+
+                try {
+                    const response = await fetch(url, { signal: speedLimitAbortController.signal });
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    
+                    const data = await response.json();
+                    const road = data.elements?.find(el => el.tags?.maxspeed);
+                    const speedLimit = road?.tags.maxspeed.match(/\d+/)?.[0];
+
+                    if (speedLimit) {
+                        speedLimitValue.textContent = speedLimit;
+                        speedLimitDisplay.classList.add('opacity-100');
+                    } else {
+                        speedLimitDisplay.classList.remove('opacity-100');
+                    }
+                } catch (error) {
+                    if (error.name !== 'AbortError') console.error('Failed to fetch OSM speed limit:', error);
+                    speedLimitDisplay.classList.remove('opacity-100');
+                }
+            }
+
+            // --- Core Functions ---
+            const requestWakeLock = async () => {
+                if ('wakeLock' in navigator) {
+                    try {
+                        wakeLockSentinel = await navigator.wakeLock.request('screen');
+                    } catch (err) { console.error(`${err.name}, ${err.message}`); }
+                }
+            };
+
+            function render() {
+                if (appInitialized) {
+                    displaySpeedMps += (rawSpeedMps - displaySpeedMps) * SMOOTHING_FACTOR;
+                    const displaySpeedValue = (displaySpeedMps * (currentUnit === 'mph' ? MPS_TO_MPH : MPS_TO_KPH)).toFixed(0);
+                    speedElement.textContent = displaySpeedValue;
+                }
+                requestAnimationFrame(render);
+            }
+
+            function setUnit(newUnit) {
+                currentUnit = newUnit;
+                unitElement.textContent = newUnit.toUpperCase();
+                mphBtn.classList.toggle('unit-btn-active', newUnit === 'mph');
+                kphBtn.classList.toggle('unit-btn-active', newUnit !== 'mph');
+            }
+
+            function handleScreenTap(event) {
+                if (event.target.closest('button') || event.target.closest('#settingsPanel')) return;
+                const screenWidth = window.innerWidth;
+                const clickX = event.clientX;
+                if (clickX < screenWidth / 3) speedometerContainer.style.left = '16.66%';
+                else if (clickX > screenWidth * 2 / 3) speedometerContainer.style.left = '83.33%';
+                else speedometerContainer.style.left = '50%';
+            }
+            
+            function handlePositionUpdate(position) {
+                if (settings.showAccuracy) {
+                    statusElement.textContent = `GPS Active. Accuracy: ${position.coords.accuracy.toFixed(0)}m`;
+                }
+                
+                if (position.coords.speed !== null) rawSpeedMps = position.coords.speed;
+                
+                const now = Date.now();
+                if (now - lastSpeedLimitCheck > SPEED_LIMIT_CHECK_INTERVAL) {
+                    lastSpeedLimitCheck = now;
+                    fetchOpenStreetMapSpeedLimit(position.coords.latitude, position.coords.longitude);
+                }
+            }
+
+            // --- Sensor Logic ---
+            function handleMotionEvent(event) {
+                if (!lastMotionTimestamp) {
+                    lastMotionTimestamp = event.timeStamp;
                     return;
                 }
-                const data = await response.json();
-                if (data.speedLimits && data.speedLimits.length > 0) {
-                    const kphLimit = data.speedLimits[0].speedLimit;
-                    const mphLimit = (kphLimit * 0.621371).toFixed(0);
-                    speedLimitValue.textContent = mphLimit;
-                } else {
-                    speedLimitValue.textContent = '--';
-                }
-            } catch (error) {
-                console.error('Failed to fetch speed limit:', error);
-                speedLimitValue.textContent = 'ERR';
-            }
-        }
-
-        // --- Core Functions ---
-        const requestWakeLock = async () => {
-            if ('wakeLock' in navigator) {
-                try {
-                    wakeLockSentinel = await navigator.wakeLock.request('screen');
-                } catch (err) { console.error(`${err.name}, ${err.message}`); }
-            }
-        };
-
-        function render() {
-            if (appInitialized) {
-                displaySpeedMps += (rawSpeedMps - displaySpeedMps) * SMOOTHING_FACTOR;
-                let displaySpeedValue = (displaySpeedMps * (currentUnit === 'mph' ? MPS_TO_MPH : MPS_TO_KPH)).toFixed(0);
-                speedElement.textContent = displaySpeedValue;
-            }
-            requestAnimationFrame(render);
-        }
-
-        function setUnit(newUnit) {
-            currentUnit = newUnit;
-            unitElement.textContent = newUnit.toUpperCase();
-            mphBtn.classList.toggle('unit-btn-active', newUnit === 'mph');
-            kphBtn.classList.toggle('unit-btn-active', newUnit === 'kph');
-            mphBtn.classList.toggle('text-red-500', newUnit !== 'mph');
-            kphBtn.classList.toggle('text-red-500', newUnit !== 'kph');
-        }
-
-        function handleScreenTap(event) {
-            if (event.target.closest('button') || event.target.closest('#settingsPanel')) return;
-            const screenWidth = window.innerWidth;
-            const clickX = event.clientX;
-            if (clickX < screenWidth / 3) speedometerContainer.style.left = '16.66%';
-            else if (clickX > screenWidth * 2 / 3) speedometerContainer.style.left = '83.33%';
-            else speedometerContainer.style.left = '50%';
-        }
-        
-        function handlePositionUpdate(position) {
-            statusElement.textContent = `GPS Active. Accuracy: ${position.coords.accuracy.toFixed(0)}m`;
-            if (demoModeCheckbox.checked) statusElement.textContent = "DEMO MODE ACTIVE";
-            
-            if (position.coords.speed !== null) rawSpeedMps = position.coords.speed;
-            
-            const now = Date.now();
-            if (now - lastSpeedLimitCheck > SPEED_LIMIT_CHECK_INTERVAL) {
-                lastSpeedLimitCheck = now;
-                fetchGoogleSpeedLimit(position.coords.latitude, position.coords.longitude);
-            }
-        }
-
-        // --- Sensor Logic ---
-        function handleMotionEvent(event) {
-            if (!lastMotionTimestamp || demoModeCheckbox.checked) {
+                const deltaTime = (event.timeStamp - lastMotionTimestamp) / 1000;
                 lastMotionTimestamp = event.timeStamp;
-                return;
+                rawSpeedMps += (event.acceleration.y || 0) * deltaTime;
+                rawSpeedMps = Math.max(0, rawSpeedMps);
             }
-            const deltaTime = (event.timeStamp - lastMotionTimestamp) / 1000;
-            lastMotionTimestamp = event.timeStamp;
-            rawSpeedMps += (event.acceleration.y || 0) * deltaTime;
-            rawSpeedMps = Math.max(0, rawSpeedMps);
-        }
 
-        function startMotionTracking() {
-            if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                DeviceMotionEvent.requestPermission().then(state => {
-                    if (state === 'granted') window.addEventListener('devicemotion', handleMotionEvent);
-                }).catch(console.error);
-            } else {
-                window.addEventListener('devicemotion', handleMotionEvent);
+            function startMotionTracking() {
+                if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                    DeviceMotionEvent.requestPermission().then(state => {
+                        if (state === 'granted') window.addEventListener('devicemotion', handleMotionEvent);
+                    }).catch(console.error);
+                } else {
+                    window.addEventListener('devicemotion', handleMotionEvent);
+                }
             }
-        }
-        
-        function startGeolocation() {
-            if ('geolocation' in navigator) {
-                navigator.geolocation.watchPosition(
-                    handlePositionUpdate,
-                    (error) => { statusElement.textContent = `GPS Error: ${error.message}`; },
-                    { enableHighAccuracy: true }
-                );
-            } else { statusElement.textContent = 'GPS is not supported by your browser.'; }
-        }
-        
-        function startDemoSimulation() {
-            // A simulated route along US-90 in Gulfport. Speed limit is 45 MPH (approx 20 m/s).
-            const route = [
-                { lat: 30.3662, lon: -89.0915, speed: 0 },
-                { lat: 30.3665, lon: -89.0905, speed: 10 },
-                { lat: 30.3670, lon: -89.0890, speed: 20 },
-                { lat: 30.3675, lon: -89.0875, speed: 20.1 },
-                { lat: 30.3680, lon: -89.0860, speed: 20.2 },
-                { lat: 30.3685, lon: -89.0845, speed: 19.9 },
-                { lat: 30.3690, lon: -89.0830, speed: 15 },
-                { lat: 30.3692, lon: -89.0820, speed: 5 },
-                { lat: 30.3693, lon: -89.0815, speed: 0 },
-            ];
-            let routeIndex = 0;
-
-            if (demoInterval) clearInterval(demoInterval);
-            demoInterval = setInterval(() => {
-                const point = route[routeIndex];
-                const fakePosition = {
-                    coords: {
-                        latitude: point.lat,
-                        longitude: point.lon,
-                        speed: point.speed,
-                        accuracy: 5
-                    }
-                };
-                handlePositionUpdate(fakePosition);
-                routeIndex = (routeIndex + 1) % route.length;
-            }, 2000); // Update every 2 seconds
-        }
-
-        function initializeApp() {
-            if (appInitialized) return;
-            appInitialized = true;
-            startBtnWrapper.classList.add('hidden');
-            speedometerDiv.classList.remove('hidden');
-            unitSwitcher.classList.remove('hidden');
-            speedLimitDisplay.classList.remove('hidden');
-            statusElement.textContent = 'Initializing...';
             
-            if (demoModeCheckbox.checked) {
-                startDemoSimulation();
-            } else {
+            function startGeolocation() {
+                if ('geolocation' in navigator) {
+                    navigator.geolocation.watchPosition(
+                        handlePositionUpdate,
+                        (error) => { statusElement.textContent = `GPS Error: ${error.message}`; },
+                        { enableHighAccuracy: true }
+                    );
+                } else { statusElement.textContent = 'GPS is not supported.'; }
+            }
+            
+            function initializeApp() {
+                if (appInitialized) return;
+                appInitialized = true;
+                startBtnWrapper.classList.add('hidden');
+                speedometerContainer.classList.remove('hidden');
+                speedometerContainer.classList.add('flex');
+                
+                statusElement.textContent = 'Initializing...';
+                
                 startGeolocation();
                 startMotionTracking();
+                
+                requestWakeLock();
+                render();
             }
-            requestWakeLock();
-            render();
-        }
 
-        // --- Settings Panel Logic ---
-        function showSettingsStatus(message, isSuccess = true) {
-            settingsStatus.textContent = message;
-            settingsStatus.style.color = isSuccess ? '#4ade80' : '#f87171';
-            setTimeout(() => { settingsStatus.textContent = ''; }, 2000);
-        }
-        
-        settingsBtn.addEventListener('click', () => settingsPanel.classList.remove('hidden'));
-        closeSettingsBtn.addEventListener('click', () => settingsPanel.classList.add('hidden'));
-        saveKeyBtn.addEventListener('click', () => {
-            const key = apiKeyInput.value.trim();
-            if(key) {
-                localStorage.setItem('googleApiKey', key);
-                googleApiKey = key;
-                showSettingsStatus('API Key Saved!');
-            } else {
-                showSettingsStatus('Please enter a key.', false);
-            }
-        });
-        clearKeyBtn.addEventListener('click', () => {
-            localStorage.removeItem('googleApiKey');
-            googleApiKey = null;
-            apiKeyInput.value = '';
-            showSettingsStatus('API Key Cleared!');
-        });
+            // --- Event Listeners ---
+            mphBtn.addEventListener('click', () => setUnit('mph'));
+            kphBtn.addEventListener('click', () => setUnit('kph'));
+            startBtn.addEventListener('click', initializeApp); 
+            document.body.addEventListener('click', handleScreenTap);
+            
+            settingsBtn.addEventListener('click', () => settingsPanel.classList.remove('hidden'));
+            closeSettingsBtn.addEventListener('click', () => settingsPanel.classList.add('hidden'));
 
-        // --- Event Listeners ---
-        mphBtn.addEventListener('click', () => setUnit('mph'));
-        kphBtn.addEventListener('click', () => setUnit('kph'));
-        startBtn.addEventListener('click', initializeApp); 
-        document.body.addEventListener('click', handleScreenTap);
-        document.addEventListener('visibilitychange', async () => {
-            if (wakeLockSentinel !== null && document.visibilityState === 'visible') await requestWakeLock();
-        });
+            themeToggle.addEventListener('change', (e) => {
+                settings.theme = e.target.checked ? 'dark' : 'light';
+                saveSettings();
+                applySettings();
+            });
 
-        window.addEventListener('load', () => {
-            googleApiKey = localStorage.getItem('googleApiKey');
-            if(googleApiKey) apiKeyInput.value = googleApiKey;
-            if ('serviceWorker' in navigator) {
-                // Construct a full URL to the service worker to avoid path resolution issues.
-                const swUrl = new URL('sw.js', window.location.href);
-                navigator.serviceWorker.register(swUrl.href).catch(err => {
-                    console.error('Service Worker registration failed:', err);
-                });
-            }
-        });
+            accuracyToggle.addEventListener('change', (e) => {
+                settings.showAccuracy = e.target.checked;
+                saveSettings();
+                applySettings();
+                if (!settings.showAccuracy) statusElement.textContent = '';
+            });
+
+            document.addEventListener('visibilitychange', async () => {
+                if (wakeLockSentinel !== null && document.visibilityState === 'visible') await requestWakeLock();
+            });
+
+            window.addEventListener('load', () => {
+                loadSettings();
+                if ('serviceWorker' in navigator) {
+                    const swUrl = new URL('sw.js', window.location.href);
+                    navigator.serviceWorker.register(swUrl.href).catch(err => {
+                        console.error('Service Worker registration failed:', err);
+                    });
+                }
+            });
+        })();
     </script>
 </body>
 </html>
