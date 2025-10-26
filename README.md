@@ -1,4 +1,4 @@
 # speed-o-meter
 A basic browser based / PWA speedometer
 
-https://jaydeuel.github.io/speed-o-meter/
+https://a325245.github.io/speed-o-meter/
