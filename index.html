@@ -1,240 +1,461 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>GPS Speedometer</title>
-    <meta name="description" content="A simple, private, and fast GPS speedometer web app.">
-    
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#111827"/>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Speedo">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="manifest" href="manifest.json">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+        <title>GPS Speedometer</title>
+        <meta name="description" content="A simple, private, and fast GPS speedometer web app.">
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Custom styles for toggle switch */
-        .toggle-checkbox:checked {
-            right: 0;
-            border-color: #48bb78;
-        }
-        .toggle-checkbox:checked + .toggle-label {
-            background-color: #48bb78;
-        }
-        /* Custom styles for active unit button */
-        .unit-btn-active {
-            background-color: #dc2626 !important;
-            color: #ffffff !important;
-        }
-        /* Ensure html and body take full height for layout */
-        html, body {
-            height: 100%;
-            overflow: hidden;
-        }
-    </style>
-</head>
-<body class="min-h-screen p-4 overflow-hidden transition-colors duration-300">
+          <!-- PWA Meta Tags -->
+          <meta name="theme-color" content="#111827"/>
+          <meta name="apple-mobile-web-app-capable" content="yes">
+            <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+              <meta name="apple-mobile-web-app-title" content="Speedo">
+                <link rel="apple-touch-icon" href="icon-192.png">
+                  <link rel="manifest" href="manifest.json">
+
+                    <!-- Tailwind CSS -->
+                    <script src="https://cdn.tailwindcss.com"></script>
+                    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+                    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+                    <style>
+                      /* Custom styles for toggle switch */
+                      .toggle-checkbox:checked {
+                      right: 0;
+                      border-color: #48bb78;
+                      }
+                      .toggle-checkbox:checked + .toggle-label {
+                      background-color: #48bb78;
+                      }
+                      /* Custom styles for active unit button */
+                      .unit-btn-active {
+                      background-color: #dc2626 !important;
+                      color: #ffffff !important;
+                      }
+                      /* Ensure html and body take full height for layout */
+                      html, body {
+                      height: 100%;
+                      overflow: hidden;
+                      }
+                    </style>
+                  </head>
+  <body class="min-h-screen p-4 overflow-hidden transition-colors duration-300">
 
     <!-- Settings Button -->
     <button id="settingsBtn" class="absolute top-4 right-4 z-30 p-2 text-gray-400 dark:text-gray-500">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
     </button>
-    
+
     <!-- Settings Panel -->
     <div id="settingsPanel" class="hidden absolute top-0 left-0 w-full h-full bg-black/80 flex items-center justify-center z-40 p-4">
-        <div class="bg-white dark:bg-gray-900 p-6 rounded-lg w-full max-w-sm text-gray-800 dark:text-gray-200">
-            <h2 class="text-xl mb-6">Settings</h2>
-            <div class="flex items-center justify-between mb-4">
-                <label for="themeToggle">Night Mode</label>
-                <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                    <input type="checkbox" name="themeToggle" id="themeToggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
-                    <label for="themeToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
-                </div>
-            </div>
-            <div class="flex items-center justify-between">
-                <label for="accuracyToggle">Show GPS Accuracy</label>
-                 <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                    <input type="checkbox" name="accuracyToggle" id="accuracyToggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
-                    <label for="accuracyToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
-                </div>
-            </div>
-            <button id="closeSettingsBtn" class="w-full mt-8 text-gray-500 dark:text-gray-400 text-center">Close</button>
+      <div class="bg-white dark:bg-gray-900 p-6 rounded-lg w-full max-w-sm text-gray-800 dark:text-gray-200">
+        <h2 class="text-xl mb-6">Settings</h2>
+        <div class="flex items-center justify-between mb-4">
+          <label for="themeToggle">Night Mode</label>
+          <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+            <input type="checkbox" name="themeToggle" id="themeToggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+            <label for="themeToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+          </div>
         </div>
+        <div class="flex items-center justify-between">
+          <label for="accuracyToggle">Show GPS Accuracy</label>
+          <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+            <input type="checkbox" name="accuracyToggle" id="accuracyToggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+            <label for="accuracyToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+          </div>
+        </div>
+        <div class="mt-6 border-t border-gray-300 dark:border-gray-700 pt-4">
+          <h3 class="font-semibold">Rider profile</h3>
+          <p class="mt-1 text-xs text-gray-500">Use a different 4-digit code for each rider. This is an identifier, not secure authentication.</p>
+          <label class="mt-3 block text-sm" for="riderCode">Your 4-digit code</label>
+          <input id="riderCode" inputmode="numeric" maxlength="4" class="mt-1 w-full rounded px-3 py-2 text-gray-900" placeholder="1234">
+          <label class="mt-3 block text-sm" for="riderName">Display name</label>
+          <input id="riderName" maxlength="24" class="mt-1 w-full rounded px-3 py-2 text-gray-900" placeholder="Rider">
+          <button id="saveProfileBtn" class="mt-3 w-full rounded bg-red-600 px-3 py-2 text-white">Save rider profile</button>
+        </div>
+        <div class="mt-6 border-t border-yellow-500 pt-4">
+          <h3 class="font-semibold text-yellow-600">Temporary testing dashboard</h3>
+          <p class="mt-1 text-xs text-gray-500">For local testing only. Simulates the other rider near your current location.</p>
+          <label class="mt-3 flex items-center gap-2 text-sm"><input id="testPeerToggle" type="checkbox"> Enable simulated rider</label>
+          <label class="mt-3 block text-sm" for="testBearing">Direction from you (degrees)</label>
+          <input id="testBearing" type="number" min="0" max="359" value="90" class="mt-1 w-full rounded px-3 py-2 text-gray-900">
+          <label class="mt-3 block text-sm" for="testSpeed">Simulated speed (current units)</label>
+          <input id="testSpeed" type="number" min="0" step="0.1" value="12" class="mt-1 w-full rounded px-3 py-2 text-gray-900">
+          <label class="mt-3 block text-sm" for="testDistance">Simulated distance (current units)</label>
+          <input id="testDistance" type="number" min="0.01" step="0.01" value="0.25" class="mt-1 w-full rounded px-3 py-2 text-gray-900">
+        </div>
+        <button id="closeSettingsBtn" class="w-full mt-8 text-gray-500 dark:text-gray-400 text-center">Close</button>
+      </div>
     </div>
 
 
     <div id="startBtnWrapper" class="flex flex-col items-center justify-center h-full">
-        <button id="startBtn" class="bg-red-600 text-white text-2xl px-8 py-4 rounded-lg hover:bg-red-700 transition-colors z-20">
-            Start
-        </button>
+      <button id="startBtn" class="bg-red-600 text-white text-2xl px-8 py-4 rounded-lg hover:bg-red-700 transition-colors z-20">
+        Start
+      </button>
     </div>
 
     <div id="speedometerContainer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-in-out flex-col items-center hidden">
-        <!-- Speed Limit Display -->
-        <div id="speedLimitDisplay" class="text-center mb-4 opacity-0 transition-opacity duration-500">
-            <div class="text-gray-500 dark:text-gray-400 text-sm">LIMIT</div>
-            <div id="speedLimitValue" class="text-3xl font-bold text-gray-900 dark:text-white">--</div>
-        </div>
+      <div id="speedometer" class="text-center">
+        <h1 id="speed" class="text-9xl md:text-[12rem] font-normal transition-all duration-200 text-red-500 dark:text-red-400">--</h1>
+        <p id="unit" class="text-3xl md:text-4xl text-red-400 dark:text-red-300 mt-2">MPH</p>
+      </div>
 
-        <div id="speedometer" class="text-center">
-            <h1 id="speed" class="text-9xl md:text-[12rem] font-normal transition-all duration-200 text-red-500 dark:text-red-400">--</h1>
-            <p id="unit" class="text-3xl md:text-4xl text-red-400 dark:text-red-300 mt-2">MPH</p>
+      <div class="grid grid-cols-2 gap-3 mt-6 w-full max-w-sm text-center">
+        <div class="rounded-xl bg-gray-200 dark:bg-gray-900 p-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400">DISTANCE</div>
+          <div id="distance" class="text-2xl font-semibold">0.00</div>
+          <div id="distanceUnit" class="text-xs text-gray-500">mi</div>
         </div>
-        
-        <div id="unitSwitcher" class="mt-8 flex space-x-2 bg-gray-200 dark:bg-gray-900 p-1 rounded-full z-20">
-            <button id="mphBtn" class="unit-btn unit-btn-active px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200">MPH</button>
-            <button id="kphBtn" class="unit-btn px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200 text-red-500">KPH</button>
+        <div class="rounded-xl bg-gray-200 dark:bg-gray-900 p-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400">RIDE TIME</div>
+          <div id="rideTime" class="text-2xl font-semibold">00:00:00</div>
         </div>
+      </div>
+
+      <div id="unitSwitcher" class="mt-8 flex space-x-2 bg-gray-200 dark:bg-gray-900 p-1 rounded-full z-20">
+        <button id="mphBtn" class="unit-btn unit-btn-active px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200">MPH</button>
+        <button id="kphBtn" class="unit-btn px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200 text-red-500">KPH</button>
+      </div>
+
+      <div class="mt-5 w-full max-w-sm rounded-xl bg-gray-200 dark:bg-gray-900 p-3 text-left">
+        <div class="flex gap-2">
+          <input id="roomCode" class="min-w-0 flex-1 rounded px-3 py-2 text-gray-900" placeholder="Ride room code">
+          <button id="shareBtn" class="rounded bg-red-600 px-3 py-2 text-white">Share</button>
+        </div>
+        <button id="endRideBtn" class="mt-3 w-full rounded border border-red-600 px-3 py-2 text-red-600">End ride and save history</button>
+        <div id="riders" class="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-300">
+          No other riders connected.
+        </div>
+      </div>
     </div>
-    
+
     <div id="status" class="absolute top-4 left-4 right-4 text-center text-sm text-gray-500 dark:text-gray-400 p-4"></div>
 
     <script>
-        // Use an immediately-invoked function expression (IIFE) to encapsulate scope
-        (() => {
-            // --- DOM Elements ---
-            const speedElement = document.getElementById('speed');
-            const unitElement = document.getElementById('unit');
-            const statusElement = document.getElementById('status');
-            const mphBtn = document.getElementById('mphBtn');
-            const kphBtn = document.getElementById('kphBtn');
-            const speedometerContainer = document.getElementById('speedometerContainer');
-            const startBtn = document.getElementById('startBtn');
-            const startBtnWrapper = document.getElementById('startBtnWrapper');
-            const unitSwitcher = document.getElementById('unitSwitcher');
-            const speedLimitDisplay = document.getElementById('speedLimitDisplay');
-            const speedLimitValue = document.getElementById('speedLimitValue');
-            const settingsBtn = document.getElementById('settingsBtn');
-            const settingsPanel = document.getElementById('settingsPanel');
-            const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-            const themeToggle = document.getElementById('themeToggle');
-            const accuracyToggle = document.getElementById('accuracyToggle');
+      // Use an immediately-invoked function expression (IIFE) to encapsulate scope
+      (() => {
+      // --- DOM Elements ---
+      const speedElement = document.getElementById('speed');
+      const unitElement = document.getElementById('unit');
+      const statusElement = document.getElementById('status');
+      const mphBtn = document.getElementById('mphBtn');
+      const kphBtn = document.getElementById('kphBtn');
+      const speedometerContainer = document.getElementById('speedometerContainer');
+      const startBtn = document.getElementById('startBtn');
+      const startBtnWrapper = document.getElementById('startBtnWrapper');
+      const unitSwitcher = document.getElementById('unitSwitcher');
+      const distanceElement = document.getElementById('distance');
+      const distanceUnitElement = document.getElementById('distanceUnit');
+      const rideTimeElement = document.getElementById('rideTime');
+      const roomCodeElement = document.getElementById('roomCode');
+      const shareBtn = document.getElementById('shareBtn');
+      const ridersElement = document.getElementById('riders');
+      const endRideBtn = document.getElementById('endRideBtn');
+      const settingsBtn = document.getElementById('settingsBtn');
+      const settingsPanel = document.getElementById('settingsPanel');
+      const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+      const themeToggle = document.getElementById('themeToggle');
+      const accuracyToggle = document.getElementById('accuracyToggle');
+      const riderCodeElement = document.getElementById('riderCode');
+      const riderNameElement = document.getElementById('riderName');
+      const saveProfileBtn = document.getElementById('saveProfileBtn');
+      const testPeerToggle = document.getElementById('testPeerToggle');
+      const testBearingElement = document.getElementById('testBearing');
+      const testSpeedElement = document.getElementById('testSpeed');
+      const testDistanceElement = document.getElementById('testDistance');
 
-            // --- State ---
-            let currentUnit = 'mph';
-            let rawSpeedMps = 0;
-            let displaySpeedMps = 0;
-            const SMOOTHING_FACTOR = 0.1;
-            const MPS_TO_MPH = 2.23694;
-            const MPS_TO_KPH = 3.6;
-            let lastMotionTimestamp = null;
-            let appInitialized = false;
-            let wakeLockSentinel = null;
+      // --- State ---
+      let currentUnit = 'mph';
+      let rawSpeedMps = 0;
+      let displaySpeedMps = 0;
+      const SMOOTHING_FACTOR = 0.1;
+      const MPS_TO_MPH = 2.23694;
+      const MPS_TO_KPH = 3.6;
+      let lastMotionTimestamp = null;
+      let appInitialized = false;
+      let wakeLockSentinel = null;
+      let watchId = null;
+      let rideStartedAt = null;
+      let distanceMeters = 0;
+      let lastPosition = null;
+      let lastHeading = null;
+      let firebaseDb = null;
+      let riderRef = null;
+      let ridersRef = null;
+      let peerRiders = {};
+      let publishTimer = null;
+      let simulationTimer = null;
+      let historySaved = false;
+      let riderId = localStorage.getItem('bikeRiderCode') || localStorage.getItem('bikeRiderId') || '';
+      let riderName = localStorage.getItem('bikeRiderName') || '';
 
-            // --- Settings ---
-            const defaultSettings = { theme: 'dark', showAccuracy: true };
-            let settings = { ...defaultSettings };
+      function saveRiderProfile() {
+      const code = riderCodeElement.value.trim();
+      if (!/^\d{4}$/.test(code)) {
+      statusElement.textContent = 'Choose exactly four digits for your rider code.';
+      riderCodeElement.focus();
+      return false;
+      }
 
-            function saveSettings() {
-                localStorage.setItem('speedometerSettings', JSON.stringify(settings));
-            }
+      function endRide() {
+      saveRideHistory();
+      if (watchId !== null && navigator.geolocation) navigator.geolocation.clearWatch(watchId);
+      appInitialized = false;
+      statusElement.textContent = 'Ride saved. Press Start to begin another ride.';
+      }
 
-            function applySettings() {
-                // Apply theme
-                if (settings.theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                    document.body.classList.add('bg-black');
-                    document.body.classList.remove('bg-gray-100');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    document.body.classList.add('bg-gray-100');
-                    document.body.classList.remove('bg-black');
-                }
-                themeToggle.checked = settings.theme === 'dark';
-                
-                // Apply accuracy visibility
-                statusElement.style.display = settings.showAccuracy ? 'block' : 'none';
-                accuracyToggle.checked = settings.showAccuracy;
-            }
+      function saveRideHistory() {
+      if (historySaved || !firebaseDb || !riderId || !rideStartedAt) return;
+      historySaved = true;
+      const historyRef = firebaseDb.ref(`bike-rider-history/${riderId}`).push();
+      historyRef.set({
+      riderName,
+      startedAt: rideStartedAt,
+      endedAt: Date.now(),
+      elapsedMs: Date.now() - rideStartedAt,
+      distanceMeters,
+      lastPosition,
+      room: roomCodeElement.value || null
+      });
+      if (riderRef) riderRef.remove();
+      if (publishTimer) clearInterval(publishTimer);
+      }
 
-            function loadSettings() {
-                const savedSettings = localStorage.getItem('speedometerSettings');
-                settings = savedSettings ? JSON.parse(savedSettings) : { ...defaultSettings };
-                applySettings();
-            }
+      function getSimulatedPeer() {
+      if (!testPeerToggle.checked || !lastPosition) return null;
+      const bearing = Math.max(0, Math.min(359, Number(testBearingElement.value) || 0));
+      const distance = Math.max(0.01, Number(testDistanceElement.value) || 0.01) * (currentUnit === 'mph' ? 1609.344 : 1000);
+      const angularDistance = distance / 6371000;
+      const bearingRadians = bearing * Math.PI / 180;
+      const latitude = lastPosition.latitude * Math.PI / 180;
+      const longitude = lastPosition.longitude * Math.PI / 180;
+      const peerLatitude = Math.asin(Math.sin(latitude) * Math.cos(angularDistance) + Math.cos(latitude) * Math.sin(angularDistance) * Math.cos(bearingRadians));
+      const peerLongitude = longitude + Math.atan2(Math.sin(bearingRadians) * Math.sin(angularDistance) * Math.cos(latitude), Math.cos(angularDistance) - Math.sin(latitude) * Math.sin(peerLatitude));
+      const speed = Math.max(0, Number(testSpeedElement.value) || 0) / (currentUnit === 'mph' ? MPS_TO_MPH : MPS_TO_KPH);
+      return {
+      name: 'Test Rider',
+      latitude: peerLatitude * 180 / Math.PI,
+      longitude: peerLongitude * 180 / Math.PI,
+      speedMps: speed
+      };
+      }
 
-            // --- Speed Limit API Logic ---
-            let lastSpeedLimitCheck = 0;
-            const SPEED_LIMIT_CHECK_INTERVAL = 10000; // 10 seconds
-            let speedLimitAbortController = null;
+      function updatePeerDisplay() {
+      const simulated = getSimulatedPeer();
+      const firebasePeers = Object.fromEntries(Object.entries(peerRiders).filter(([id]) => id !== 'test-peer'));
+      if (simulated) firebasePeers['test-peer'] = simulated;
+      const originalPeers = peerRiders;
+      peerRiders = firebasePeers;
+      renderPeerRiders();
+      peerRiders = originalPeers;
+      }
 
-            async function fetchOpenStreetMapSpeedLimit(lat, lon) {
-                if (speedLimitAbortController) speedLimitAbortController.abort();
-                speedLimitAbortController = new AbortController();
-                
-                const query = `[out:json][timeout:10];way(around:50,${lat},${lon})["maxspeed"];out body;>;out skel qt;`;
-                const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+      function startSimulationRefresh() {
+      if (simulationTimer) clearInterval(simulationTimer);
+      simulationTimer = setInterval(() => {
+      if (testPeerToggle.checked) updatePeerDisplay();
+      }, 1000);
+      }
+      riderId = `rider-${code}`;
+      riderName = riderNameElement.value.trim() || `Rider ${code}`;
+      localStorage.setItem('bikeRiderCode', code);
+      localStorage.setItem('bikeRiderId', riderId);
+      localStorage.setItem('bikeRiderName', riderName);
+      statusElement.textContent = `Profile saved for ${riderName}.`;
+      return true;
+      }
 
-                try {
-                    const response = await fetch(url, { signal: speedLimitAbortController.signal });
-                    if (!response.ok) throw new Error(`API error: ${response.status}`);
-                    
-                    const data = await response.json();
-                    const road = data.elements?.find(el => el.tags?.maxspeed);
-                    const speedLimit = road?.tags.maxspeed.match(/\d+/)?.[0];
+      function loadRiderProfile() {
+      const storedCode = localStorage.getItem('bikeRiderCode');
+      if (storedCode && /^\d{4}$/.test(storedCode)) riderCodeElement.value = storedCode;
+      riderNameElement.value = riderName;
+      }
 
-                    if (speedLimit) {
-                        speedLimitValue.textContent = speedLimit;
-                        speedLimitDisplay.classList.add('opacity-100');
-                    } else {
-                        speedLimitDisplay.classList.remove('opacity-100');
-                    }
-                } catch (error) {
-                    if (error.name !== 'AbortError') console.error('Failed to fetch OSM speed limit:', error);
-                    speedLimitDisplay.classList.remove('opacity-100');
-                }
-            }
+      // --- Settings ---
+      const defaultSettings = { theme: 'dark', showAccuracy: true };
+      let settings = { ...defaultSettings };
 
-            // --- Core Functions ---
-            const requestWakeLock = async () => {
-                if ('wakeLock' in navigator) {
-                    try {
-                        wakeLockSentinel = await navigator.wakeLock.request('screen');
-                    } catch (err) { console.error(`${err.name}, ${err.message}`); }
-                }
-            };
+      function saveSettings() {
+      localStorage.setItem('speedometerSettings', JSON.stringify(settings));
+      }
 
-            function render() {
-                if (appInitialized) {
-                    displaySpeedMps += (rawSpeedMps - displaySpeedMps) * SMOOTHING_FACTOR;
-                    const displaySpeedValue = (displaySpeedMps * (currentUnit === 'mph' ? MPS_TO_MPH : MPS_TO_KPH)).toFixed(0);
-                    speedElement.textContent = displaySpeedValue;
-                }
-                requestAnimationFrame(render);
-            }
+      function renderPeerRiders() {
+      const peers = Object.entries(peerRiders);
+      ridersElement.innerHTML = peers.length ? peers.map(([, peer]) => {
+      const distance = lastPosition ? haversineMeters(lastPosition, peer) : null;
+      const bearing = lastPosition ? bearingDegrees(lastPosition, peer) : null;
+      const speed = currentUnit === 'mph' ? (peer.speedMps || 0) * MPS_TO_MPH : (peer.speedMps || 0) * MPS_TO_KPH;
+      return `<div class="flex items-center justify-between rounded bg-white/60 dark:bg-black/30 px-2 py-2"><span><b>${escapeHtml(peer.name || 'Rider')}</b><br><span class="text-xs">${distance === null ? '--' : formatDistance(distance)} away · ${speed.toFixed(1)} ${currentUnit}</span></span><span class="text-3xl" title="Bearing ${bearing === null ? '--' : bearing.toFixed(0)}°" style="display:inline-block;transform:rotate(${bearing || 0}deg)">↑</span></div>`;
+      }).join('') : 'No other riders connected.';
+      }
 
-            function setUnit(newUnit) {
-                currentUnit = newUnit;
-                unitElement.textContent = newUnit.toUpperCase();
-                mphBtn.classList.toggle('unit-btn-active', newUnit === 'mph');
-                kphBtn.classList.toggle('unit-btn-active', newUnit !== 'mph');
-            }
+      function applySettings() {
+      // Apply theme
+      if (settings.theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.body.classList.add('bg-black');
+      document.body.classList.remove('bg-gray-100');
+      } else {
+      document.documentElement.classList.remove('dark');
+      document.body.classList.add('bg-gray-100');
+      document.body.classList.remove('bg-black');
+      }
+      themeToggle.checked = settings.theme === 'dark';
 
-            function handleScreenTap(event) {
-                if (event.target.closest('button') || event.target.closest('#settingsPanel')) return;
-                const screenWidth = window.innerWidth;
-                const clickX = event.clientX;
-                if (clickX < screenWidth / 3) speedometerContainer.style.left = '16.66%';
+      // Apply accuracy visibility
+      statusElement.style.display = settings.showAccuracy ? 'block' : 'none';
+      accuracyToggle.checked = settings.showAccuracy;
+      }
+
+      function loadSettings() {
+      const savedSettings = localStorage.getItem('speedometerSettings');
+      settings = savedSettings ? JSON.parse(savedSettings) : { ...defaultSettings };
+      applySettings();
+      }
+
+      // --- Core Functions ---
+      const requestWakeLock = async () => {
+      if ('wakeLock' in navigator) {
+      try {
+      wakeLockSentinel = await navigator.wakeLock.request('screen');
+      } catch (err) { console.error(`${err.name}, ${err.message}`); }
+      }
+      };
+
+      function render() {
+      if (appInitialized) {
+      displaySpeedMps += (rawSpeedMps - displaySpeedMps) * SMOOTHING_FACTOR;
+      const displaySpeedValue = (displaySpeedMps * (currentUnit === 'mph' ? MPS_TO_MPH : MPS_TO_KPH)).toFixed(0);
+      speedElement.textContent = displaySpeedValue;
+      const distanceValue = currentUnit === 'mph' ? distanceMeters / 1609.344 : distanceMeters / 1000;
+      distanceElement.textContent = distanceValue.toFixed(2);
+      distanceUnitElement.textContent = currentUnit === 'mph' ? 'mi' : 'km';
+      rideTimeElement.textContent = formatDuration(rideStartedAt ? Date.now() - rideStartedAt : 0);
+      }
+      requestAnimationFrame(render);
+      }
+
+      function formatDuration(milliseconds) {
+      const totalSeconds = Math.floor(milliseconds / 1000);
+      const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+      const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+      const seconds = String(totalSeconds % 60).padStart(2, '0');
+      return `${hours}:${minutes}:${seconds}`;
+      }
+
+      function haversineMeters(a, b) {
+      const radius = 6371000;
+      const lat1 = a.latitude * Math.PI / 180;
+      const lat2 = b.latitude * Math.PI / 180;
+      const dLat = (b.latitude - a.latitude) * Math.PI / 180;
+      const dLon = (b.longitude - a.longitude) * Math.PI / 180;
+      const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+      return 2 * radius * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+      }
+
+      function bearingDegrees(a, b) {
+      const lat1 = a.latitude * Math.PI / 180;
+      const lat2 = b.latitude * Math.PI / 180;
+      const dLon = (b.longitude - a.longitude) * Math.PI / 180;
+      const y = Math.sin(dLon) * Math.cos(lat2);
+      const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+      return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+      }
+
+      function initializeFirebase() {
+      if (firebaseDb) return;
+      try {
+      firebase.initializeApp({ databaseURL: 'https://santorino-1a999-default-rtdb.firebaseio.com' });
+      firebaseDb = firebase.database();
+      } catch (error) {
+      if (error.code === 'app/duplicate-app') firebaseDb = firebase.database();
+      else console.error('Firebase initialization failed:', error);
+      }
+      }
+
+      function publishRider() {
+      if (!riderRef || !lastPosition) return;
+      riderRef.set({
+      name: riderName,
+      latitude: lastPosition.latitude,
+      longitude: lastPosition.longitude,
+      speedMps: rawSpeedMps,
+      distanceMeters,
+      elapsedMs: Date.now() - rideStartedAt,
+      heading: lastHeading,
+      updatedAt: firebase.database.ServerValue.TIMESTAMP
+      });
+      }
+
+      function joinRideRoom() {
+      if (!saveRiderProfile()) return;
+      initializeFirebase();
+      if (!firebaseDb) return;
+      const room = (roomCodeElement.value || 'demo').trim().replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 40) || 'demo';
+      roomCodeElement.value = room;
+      const roomRef = firebaseDb.ref(`bike-rides/${room}`);
+      riderRef = roomRef.child(riderId);
+      ridersRef = roomRef;
+      riderRef.onDisconnect().remove();
+      ridersRef.on('value', snapshot => {
+      const riders = snapshot.val() || {};
+      peerRiders = Object.fromEntries(Object.entries(riders).filter(([id]) => id !== riderId));
+      updatePeerDisplay();
+      });
+      publishRider();
+      if (publishTimer) clearInterval(publishTimer);
+      publishTimer = setInterval(publishRider, 5000);
+      statusElement.textContent = `Sharing ride in room “${room}”.`;
+      }
+
+      function formatDistance(meters) {
+      return currentUnit === 'mph' ? `${(meters / 1609.344).toFixed(2)} mi` : `${(meters / 1000).toFixed(2)} km`;
+      }
+
+      function escapeHtml(value) {
+      return String(value).replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
+      }
+
+      function setUnit(newUnit) {
+      currentUnit = newUnit;
+      unitElement.textContent = newUnit.toUpperCase();
+      mphBtn.classList.toggle('unit-btn-active', newUnit === 'mph');
+      kphBtn.classList.toggle('unit-btn-active', newUnit !== 'mph');
+      updatePeerDisplay();
+      }
+
+      function handleScreenTap(event) {
+      if (event.target.closest('button') || event.target.closest('#settingsPanel')) return;
+      const screenWidth = window.innerWidth;
+      const clickX = event.clientX;
+      if (clickX < screenWidth / 3) speedometerContainer.style.left = '16.66%';
                 else if (clickX > screenWidth * 2 / 3) speedometerContainer.style.left = '83.33%';
                 else speedometerContainer.style.left = '50%';
             }
             
             function handlePositionUpdate(position) {
+                const coords = position.coords;
+                const currentPosition = {
+                    latitude: coords.latitude,
+                    longitude: coords.longitude
+                };
                 if (settings.showAccuracy) {
-                    statusElement.textContent = `GPS Active. Accuracy: ${position.coords.accuracy.toFixed(0)}m`;
+                    statusElement.textContent = `GPS Active. Accuracy: ${coords.accuracy.toFixed(0)}m`;
                 }
                 
-                if (position.coords.speed !== null) rawSpeedMps = position.coords.speed;
-                
-                const now = Date.now();
-                if (now - lastSpeedLimitCheck > SPEED_LIMIT_CHECK_INTERVAL) {
-                    lastSpeedLimitCheck = now;
-                    fetchOpenStreetMapSpeedLimit(position.coords.latitude, position.coords.longitude);
+                if (coords.speed !== null) rawSpeedMps = Math.max(0, coords.speed);
+                if (coords.heading !== null && !Number.isNaN(coords.heading)) lastHeading = coords.heading;
+                if (lastPosition) {
+                    const sampleDistance = haversineMeters(lastPosition, currentPosition);
+                    if (sampleDistance < 200) distanceMeters += sampleDistance;
                 }
+                lastPosition = currentPosition;
+                updatePeerDisplay();
+                publishRider();
             }
 
             // --- Sensor Logic ---
@@ -261,7 +482,7 @@
             
             function startGeolocation() {
                 if ('geolocation' in navigator) {
-                    navigator.geolocation.watchPosition(
+                    watchId = navigator.geolocation.watchPosition(
                         handlePositionUpdate,
                         (error) => { statusElement.textContent = `GPS Error: ${error.message}`; },
                         { enableHighAccuracy: true }
@@ -271,15 +492,20 @@
             
             function initializeApp() {
                 if (appInitialized) return;
+                if (!saveRiderProfile()) return;
                 appInitialized = true;
                 startBtnWrapper.classList.add('hidden');
                 speedometerContainer.classList.remove('hidden');
                 speedometerContainer.classList.add('flex');
                 
-                statusElement.textContent = 'Initializing...';
+                rideStartedAt = Date.now();
+                historySaved = false;
+                statusElement.textContent = 'Initializing GPS...';
                 
                 startGeolocation();
                 startMotionTracking();
+                joinRideRoom();
+                startSimulationRefresh();
                 
                 requestWakeLock();
                 render();
@@ -289,6 +515,13 @@
             mphBtn.addEventListener('click', () => setUnit('mph'));
             kphBtn.addEventListener('click', () => setUnit('kph'));
             startBtn.addEventListener('click', initializeApp); 
+            shareBtn.addEventListener('click', joinRideRoom);
+            endRideBtn.addEventListener('click', endRide);
+            saveProfileBtn.addEventListener('click', saveRiderProfile);
+            [testPeerToggle, testBearingElement, testSpeedElement, testDistanceElement].forEach(element => {
+                element.addEventListener('input', updatePeerDisplay);
+                element.addEventListener('change', updatePeerDisplay);
+            });
             document.body.addEventListener('click', handleScreenTap);
             
             settingsBtn.addEventListener('click', () => settingsPanel.classList.remove('hidden'));
@@ -309,19 +542,21 @@
 
             document.addEventListener('visibilitychange', async () => {
                 if (wakeLockSentinel !== null && document.visibilityState === 'visible') await requestWakeLock();
-            });
+      });
+            window.addEventListener('pagehide', saveRideHistory);
 
-            window.addEventListener('load', () => {
-                loadSettings();
-                if ('serviceWorker' in navigator) {
-                    const swUrl = new URL('sw.js', window.location.href);
-                    navigator.serviceWorker.register(swUrl.href).catch(err => {
-                        console.error('Service Worker registration failed:', err);
-                    });
-                }
-            });
-        })();
+      window.addEventListener('load', () => {
+      loadSettings();
+      loadRiderProfile();
+      if ('serviceWorker' in navigator) {
+      const swUrl = new URL('sw.js', window.location.href);
+      navigator.serviceWorker.register(swUrl.href).catch(err => {
+      console.error('Service Worker registration failed:', err);
+      });
+      }
+      });
+      })();
     </script>
-</body>
+  </body>
 </html>
 
