@@ -69,9 +69,7 @@
         </div>
         <div class="mt-6 border-t border-gray-300 dark:border-gray-700 pt-4">
           <h3 class="font-semibold">Rider profile</h3>
-          <p class="mt-1 text-xs text-gray-500">Use a different 4-digit code for each rider. This is an identifier, not secure authentication.</p>
-          <label class="mt-3 block text-sm" for="riderCode">Your 4-digit code</label>
-          <input id="riderCode" inputmode="numeric" maxlength="4" class="mt-1 w-full rounded px-3 py-2 text-gray-900" placeholder="1234">
+          <p class="mt-1 text-xs text-gray-500">Your rider name is saved on this device.</p>
           <label class="mt-3 block text-sm" for="riderName">Display name</label>
           <input id="riderName" maxlength="24" class="mt-1 w-full rounded px-3 py-2 text-gray-900" placeholder="Rider">
           <button id="saveProfileBtn" class="mt-3 w-full rounded bg-red-600 px-3 py-2 text-white">Save rider profile</button>
@@ -160,7 +158,6 @@
       const closeSettingsBtn = document.getElementById('closeSettingsBtn');
       const themeToggle = document.getElementById('themeToggle');
       const accuracyToggle = document.getElementById('accuracyToggle');
-      const riderCodeElement = document.getElementById('riderCode');
       const riderNameElement = document.getElementById('riderName');
       const saveProfileBtn = document.getElementById('saveProfileBtn');
       const testPeerToggle = document.getElementById('testPeerToggle');
@@ -190,22 +187,15 @@
       let publishTimer = null;
       let simulationTimer = null;
       let historySaved = false;
-      let riderId = localStorage.getItem('bikeRiderCode') || localStorage.getItem('bikeRiderId') || '';
-      let riderName = localStorage.getItem('bikeRiderName') || '';
+      let riderId = localStorage.getItem('bikeRiderId') || `rider-${Math.random().toString(36).slice(2, 10)}`;
+      let riderName = localStorage.getItem('bikeRiderName') || 'Rider';
 
       function saveRiderProfile() {
-      const code = riderCodeElement.value.trim();
-      if (!/^\d{4}$/.test(code)) {
-      statusElement.textContent = 'Choose exactly four digits for your rider code.';
-      riderCodeElement.focus();
-      return false;
-      }
-
-      function endRide() {
-      saveRideHistory();
-      if (watchId !== null && navigator.geolocation) navigator.geolocation.clearWatch(watchId);
-      appInitialized = false;
-      statusElement.textContent = 'Ride saved. Press Start to begin another ride.';
+      riderName = riderNameElement.value.trim() || 'Rider';
+      localStorage.setItem('bikeRiderId', riderId);
+      localStorage.setItem('bikeRiderName', riderName);
+      statusElement.textContent = `Profile saved for ${riderName}.`;
+      return true;
       }
 
       function saveRideHistory() {
@@ -260,19 +250,16 @@
       if (testPeerToggle.checked) updatePeerDisplay();
       }, 1000);
       }
-      riderId = `rider-${code}`;
-      riderName = riderNameElement.value.trim() || `Rider ${code}`;
-      localStorage.setItem('bikeRiderCode', code);
-      localStorage.setItem('bikeRiderId', riderId);
-      localStorage.setItem('bikeRiderName', riderName);
-      statusElement.textContent = `Profile saved for ${riderName}.`;
-      return true;
-      }
 
       function loadRiderProfile() {
-      const storedCode = localStorage.getItem('bikeRiderCode');
-      if (storedCode && /^\d{4}$/.test(storedCode)) riderCodeElement.value = storedCode;
       riderNameElement.value = riderName;
+      }
+
+      function endRide() {
+      saveRideHistory();
+      if (watchId !== null && navigator.geolocation) navigator.geolocation.clearWatch(watchId);
+      appInitialized = false;
+      statusElement.textContent = 'Ride saved. Press Start to begin another ride.';
       }
 
       // --- Settings ---
@@ -313,7 +300,11 @@
 
       function loadSettings() {
       const savedSettings = localStorage.getItem('speedometerSettings');
-      settings = savedSettings ? JSON.parse(savedSettings) : { ...defaultSettings };
+      try {
+      settings = savedSettings ? { ...defaultSettings, ...JSON.parse(savedSettings) } : { ...defaultSettings };
+      } catch (error) {
+      settings = { ...defaultSettings };
+      }
       applySettings();
       }
 
@@ -492,7 +483,6 @@
             
             function initializeApp() {
                 if (appInitialized) return;
-                if (!saveRiderProfile()) return;
                 appInitialized = true;
                 startBtnWrapper.classList.add('hidden');
                 speedometerContainer.classList.remove('hidden');
